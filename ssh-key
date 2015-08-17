@@ -53,12 +53,18 @@ def cmd_new(args):
                     key_name=key_name)
             subprocess.check_call(["ssh-keygen", "-C", comment, "-f", privkey_fname])
         
-        # copy the key
-        subprocess.call(["ssh-copy-id",
-                         "-i", pubkey_fname,
-                         "-o", "ControlPath=none", # work around bug in ssh-copy-id
-                         "-p", str(args.port),
-                         user_host])
+        if args.service:
+            # print the public key for easy copying
+            print "generated key for user_host:"
+            with open(pubkey_fname) as pk_f:
+                print pk_f.read()
+        else:
+            # copy the key
+            subprocess.call(["ssh-copy-id",
+                             "-i", pubkey_fname,
+                             "-o", "ControlPath=none", # work around bug in ssh-copy-id
+                             "-p", str(args.port),
+                             user_host])
         
         update_configs()
 
@@ -174,6 +180,8 @@ def parse_args():
     
     new_cmd = subparsers.add_parser('new')
     new_cmd.add_argument('-p', dest="port", type=int, default=22, help="port")
+    new_cmd.add_argument('-s', dest="service", action="store_true",
+            help="Generate a service key; don't install it on the host.")
     new_cmd.add_argument('hosts', metavar='host', nargs='+', help="hostnames")
     new_cmd.set_defaults(func=cmd_new)
     
