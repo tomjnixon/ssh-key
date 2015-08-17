@@ -83,7 +83,9 @@ def get_keys():
 
 # [hostname]:port
 HOST_PORT_REGEX = re.compile(r"^\[([^\]]+)\]:([0-9]+)$")
+
 def parse_host_port(host_port):
+    """Parse host and port from known_hosts, as defined in sshd(8)."""
     m = HOST_PORT_REGEX.match(host_port)
     if m:
         return m.group(1, 2)
