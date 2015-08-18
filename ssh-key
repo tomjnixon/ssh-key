@@ -99,6 +99,8 @@ def parse_host_port(host_port):
         return (host_port, "22")
 
 def read_known_hosts():
+    """Read the known hosts file, yielding (host, port, type, key) tuples for
+    each known host. Lines with multiple hosts are split into seperate entries."""
     with open(KNOWN_HOSTS) as f:
         for line in f:
             hosts_str, type, key = line.split()
@@ -106,8 +108,8 @@ def read_known_hosts():
                 yield host, port, type, key
 
 def get_same_host_index():
-    """Get an dict from (host, port) to sets of (host, port) which share the
-    same public key."""
+    """Using known_hosts, get a dict from (host, port) to sets of (host, port)
+    which share the same public key."""
     known_hosts = list(read_known_hosts())
     
     key_to_hosts = collections.defaultdict(set)
@@ -123,6 +125,8 @@ def get_same_host_index():
     return host_to_hosts
 
 def update_config_keys():
+    """Update the config.keys file from the comments in public keys, getting
+    equivalent hosts from known_hosts."""
     same_host_index = get_same_host_index()
     
     with open(CONFIG_KEYS, 'w') as f:
@@ -140,6 +144,11 @@ def update_config_keys():
                 ])
 
 def allow_write_config():
+    """Are we alowed to write to the ssh config?
+    This is based on the config.last file which contains the last contents we
+    wrote to the actual config file. If this doesn't exist, or the contents
+    have changed, return false.
+    """
     if not os.path.exists(CONFIG):
         return True
     
