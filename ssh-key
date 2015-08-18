@@ -100,7 +100,7 @@ def parse_host_port(host_port):
 
 def read_known_hosts():
     """Read the known hosts file, yielding (host, port, type, key) tuples for
-    each known host. Lines with multiple hosts are split into seperate entries."""
+    each known host. Lines with multiple hosts are split into separate entries."""
     with open(KNOWN_HOSTS) as f:
         for line in f:
             hosts_str, type, key = line.split()
@@ -144,7 +144,7 @@ def update_config_keys():
                 ])
 
 def allow_write_config():
-    """Are we alowed to write to the ssh config?
+    """Are we allowed to write to the ssh config?
     This is based on the config.last file which contains the last contents we
     wrote to the actual config file. If this doesn't exist, or the contents
     have changed, return false.
