@@ -133,7 +133,7 @@ def update_config_keys():
         f.write(GENERATED_STRING + "\n")
         for priv_fname, orig_hostname, orig_port in get_keys():
             equivalent_hosts = same_host_index.get((orig_hostname, orig_port),
-                                                   (orig_hostname, orig_port))
+                                                   [(orig_hostname, orig_port)])
             for hostname, port in equivalent_hosts:
                 f.writelines([
                     "Match host {hostname} exec \"test %p = {port}\"\n".format(
