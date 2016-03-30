@@ -30,8 +30,11 @@ def parse_user_host(user_host):
 def get_key_name(hostname, port):
     return "id_{host}_{port}".format(host=hostname, port=port)
 
-def get_privkey_fname(key_name):
-    return os.path.join(SSH_DIR, key_name)
+def get_privkey_fname(key_name, for_host=None):
+    if for_host is not None:
+        return os.path.join(SSH_DIR, "for_" + for_host, key_name)
+    else:
+        return os.path.join(SSH_DIR, key_name)
 
 def ssh_copy_id(user_host, port, pubkey_fname):
     """A re-implementation of ssh-copy-id, that checks to see if the key
@@ -67,18 +70,29 @@ def cmd_new(args):
         user, hostname = parse_user_host(user_host)
         
         key_name = get_key_name(hostname, args.port)
-        privkey_fname = get_privkey_fname(key_name)
+        privkey_fname = get_privkey_fname(key_name, args.for_host)
         pubkey_fname = privkey_fname + ".pub"
+
+        # make sure the key directory exists
+        key_dir = os.path.dirname(pubkey_fname)
+        if not os.path.exists(key_dir):
+            os.mkdir(key_dir)
         
         # generate a key if one doesn't exist already
         if not os.path.exists(privkey_fname):
+            local_hostname = args.for_host if args.for_host is not None else socket.getfqdn()
             comment = "{user}@{local_hostname} {key_name}".format(
                     user=get_user(),
-                    local_hostname=socket.getfqdn(),
+                    local_hostname=local_hostname,
                     key_name=key_name)
             subprocess.check_call(["ssh-keygen", "-C", comment, "-f", privkey_fname])
         else:
             print "using existing key for {user_host}".format(user_host=user_host)
+
+        if args.for_host is not None:
+            print "generated keys:"
+            print "    " + pubkey_fname
+            print "    " + privkey_fname
         
         if args.service:
             # print the public key for easy copying
@@ -221,6 +235,8 @@ def parse_args():
     new_cmd.add_argument('-p', dest="port", type=int, default=22, help="port")
     new_cmd.add_argument('-s', dest="service", action="store_true",
             help="Generate a service key; don't install it on the host.")
+    new_cmd.add_argument("--for", dest="for_host",
+                         help="Generate a SSH key for another system.")
     new_cmd.add_argument('hosts', metavar='host', nargs='+', help="hostnames")
     new_cmd.set_defaults(func=cmd_new)
     
