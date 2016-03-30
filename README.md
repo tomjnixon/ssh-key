@@ -16,8 +16,8 @@ When you want to generate a key for a hostname that you have SSH access to:
 
 This will:
 
-- generate a new key called id_${NEW_HOSTNAME}_22 in ~/.ssh
-- copy it to the authorized_heys file on $NEW_HOSTNAME
+- generate a new key called `id_${NEW_HOSTNAME}_22` in `~/.ssh/`
+- copy it to the authorized_heys file on `$NEW_HOSTNAME`
 - add lines to your SSH config that cause only the generated identity to be
   used for this host
 
@@ -33,7 +33,7 @@ used:
             IdentitiesOnly yes
             IdentityFile /home/tom/.ssh/id_$HOSTNAME_$PORTNUM
 
-- ~/.ssh/config is produced from the concatenation of `~/.ssh/config.head`,
+- `~/.ssh/config` is produced from the concatenation of `~/.ssh/config.head`,
   `./.ssh/config.keys` and `~/.ssh/config.tail`.
 
 This happen whenever you run a `ssh-key new` command. Run `ssh-key config` to
@@ -43,8 +43,8 @@ just re-run these steps (for example when you've edited `~/.ssh/config.head`).
 
 Sometimes, there may be multiple ways to reach a given host that SSH does not
 know about, perhaps because there are multiple DNS entries for a given host,
-you have an entry in your /etc/hosts, or you sometimes access it by its IP
-address. This is resolved using information in your ~/.ssh/known_hosts file,
+you have an entry in your `/etc/hosts`, or you sometimes access it by its IP
+address. This is resolved using information in your `~/.ssh/known_hosts` file,
 which stores a list of known hostnames/IPs, and the public key of the
 associated SSH server.
 
