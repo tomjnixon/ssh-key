@@ -1,3 +1,5 @@
+## STATUS: pre-release
+
 # SSH-KEY
 
 Makes it easy to use a separate SSH key for each system you want to log in to.
