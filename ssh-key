@@ -33,6 +33,35 @@ def get_key_name(hostname, port):
 def get_privkey_fname(key_name):
     return os.path.join(SSH_DIR, key_name)
 
+def ssh_copy_id(user_host, port, pubkey_fname):
+    """A re-implementation of ssh-copy-id, that checks to see if the key
+    already exists in the authorized_keys file on the remote side, instead of
+    testing by logging in.
+
+    This allows us to use all our tricks to log in (existing keys, existing
+    connections) for when we want to add a new key.
+
+    The alternative to this would be to try logging in with only the key to be
+    added, however this is dificult to set up, as the '-i' option in ssh only
+    adds to the list of keys specified in the config file, so we would have to
+    re-write that first.
+    """
+    command = ("exec sh -c '"
+               "read -r line ; " # read the line to add
+               "key=`echo \"$line\" | cut -d \" \" -f 2` ; " # extract the key field
+               "cd ; umask 077 ; "
+               # if the file does not exist, or the key is not already in the file, add it
+               "if ! [ -f .ssh/authorized_keys ] || ! grep -Fq \"$line\" .ssh/authorized_keys ; then "
+                   "mkdir -p .ssh && echo \"$line\" >> .ssh/authorized_keys || exit 1 ; "
+                   "echo \"key successfully installed\" ; "
+               "else "
+                   "echo \"key already installed\" ; "
+               "fi ; "
+               # deal with selinux, as in ssh-copy-id
+               "if type restorecon >/dev/null 2>&1 ; then restorecon -F .ssh .ssh/authorized_keys ; fi'")
+    with open(pubkey_fname) as pubkey_file:
+        subprocess.check_call(["ssh", "-p", str(port), user_host, command], stdin=pubkey_file)
+
 def cmd_new(args):
     for user_host in args.hosts:
         user, hostname = parse_user_host(user_host)
@@ -57,12 +86,7 @@ def cmd_new(args):
             with open(pubkey_fname) as pk_f:
                 print pk_f.read()
         else:
-            # copy the key
-            subprocess.call(["ssh-copy-id",
-                             "-i", pubkey_fname,
-                             "-o", "ControlPath=none", # work around bug in ssh-copy-id
-                             "-p", str(args.port),
-                             user_host])
+            ssh_copy_id(user_host, args.port, pubkey_fname)
         
         update_configs()
 
