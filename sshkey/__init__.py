@@ -87,18 +87,18 @@ def cmd_new(args):
                     key_name=key_name)
             subprocess.check_call(["ssh-keygen", "-C", comment, "-f", privkey_fname])
         else:
-            print "using existing key for {user_host}".format(user_host=user_host)
+            print("using existing key for {user_host}".format(user_host=user_host))
 
         if args.for_host is not None:
-            print "generated keys:"
-            print "    " + pubkey_fname
-            print "    " + privkey_fname
+            print("generated keys:")
+            print("    " + pubkey_fname)
+            print("    " + privkey_fname)
         
         if args.service:
             # print the public key for easy copying
-            print "generated key for {user_host}:".format(user_host=user_host)
+            print("generated key for {user_host}:".format(user_host=user_host))
             with open(pubkey_fname) as pk_f:
-                print pk_f.read()
+                print(pk_f.read())
         else:
             ssh_copy_id(user_host, args.port, pubkey_fname)
         
